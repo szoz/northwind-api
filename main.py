@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Path
 from fastapi.responses import RedirectResponse
 from sqlite3 import connect
 
@@ -29,8 +29,22 @@ async def index():
 @app.get('/products')
 async def get_products():
     """Return list of all Products and their count."""
-    products = [row[0] for row in app.db_connection.execute("SELECT ProductName FROM Products").fetchall()]
+    query = "SELECT ProductName FROM Products"
+    products = [row[0] for row in app.db_connection.execute(query).fetchall()]
     payload = {"products": products, "products_counter": len(products)}
+
+    return payload
+
+
+@app.get('/products/{id}')
+async def get_product(product_id: int = Path(-1, alias='id')):
+    """Return product with given id."""
+    query = "SELECT ProductID, ProductName FROM Products WHERE ProductID=:id"
+    product = app.db_connection.execute(query, {'id': product_id}).fetchone()
+    if product is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+
+    payload = {'id': product[0], 'name': product[1]}
 
     return payload
 

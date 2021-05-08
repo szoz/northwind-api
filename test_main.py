@@ -11,8 +11,8 @@ def client():
         yield test_client
 
 
-def test_products(client):
-    """Test '/products' endpoint."""
+def test_products_old(client):
+    """Test '/products' endpoint with no path parameters."""
     test_path = '/products'
 
     response = client.get(test_path)
@@ -21,6 +21,19 @@ def test_products(client):
     assert response.status_code == 200
     assert type(payload.get('products')) is list
     assert len(payload['products']) == payload['products_counter']
+
+
+def test_products(client):
+    """Test '/products' endpoint with given id."""
+    test_path = '/products/'
+    test_product = {'id': 1, 'name': 'Chai'}
+
+    response_invalid = client.get(f'{test_path}999')
+    response_valid = client.get(f'{test_path}1')
+
+    assert response_invalid.status_code == 404
+    assert response_valid.status_code == 200
+    assert response_valid.json() == test_product
 
 
 def test_categories(client):
