@@ -90,13 +90,16 @@ def test_employees(client):
 def test_products_extended(client):
     """Test '/products_extended' endpoint."""
     test_path = '/products_extended'
+    product_short_path = '/products'
     test_product = {"id": 1, "name": "Chai", "category": "Beverages", "supplier": "Exotic Liquids"}
 
     response = client.get(test_path)
     payload = response.json()
+    expected_length = client.get(product_short_path).json()['products_counter']
 
     assert response.status_code == 200
     assert type(payload) is dict
     assert type(payload.get('products_extended')) is list
     assert test_product in payload['products_extended']
     assert sorted(payload['products_extended'], key=lambda item: item['id']) == payload['products_extended']
+    assert len(payload['products_extended']) == expected_length
