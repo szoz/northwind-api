@@ -42,7 +42,7 @@ async def get_products():
 @app.get('/products/{id}')
 async def get_product(product_id: int = Path(-1, alias='id')):
     """Return product with given id."""
-    query = 'SELECT ProductID, ProductName FROM Products WHERE ProductID=:id'
+    query = 'SELECT ProductID, ProductName FROM Products WHERE ProductID = :id'
     product = app.db_connection.execute(query, {'id': product_id}).fetchone()
     if product is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Item not found')
@@ -109,14 +109,40 @@ async def get_employees(order: Optional[str] = None, limit: int = -1, offset: in
 
 
 @app.get('/products_extended')
-async def products_extended():
+async def get_products_extended():
     """Return list of products with detailed information."""
     query = """SELECT ProductID, ProductName, Categories.CategoryName, Suppliers.CompanyName FROM Products
                LEFT JOIN Categories ON Products.CategoryID = Categories.CategoryID
-               LEFT JOIN Suppliers ON Products.SupplierID = Suppliers.SupplierID;"""
+               LEFT JOIN Suppliers ON Products.SupplierID = Suppliers.SupplierID"""
     records = app.db_connection.execute(query).fetchall()
     products = [{'id': record[0], 'name': record[1], 'category': record[2], 'supplier': record[3]}
                 for record in records]
     payload = {'products_extended': products}
+
+    return payload
+
+
+def calculate_total_price(quantity: int, discount: int, unit_price: int):
+    """Helper function for calculating product total price for '/products/{id}/orders' endpoint"""
+    total_price = unit_price * quantity * (1 - discount)
+    return round(total_price, ndigits=2)
+
+
+@app.get('/products/{id}/orders')
+async def get_products_orders(product_id: int = Path(-1, alias='id')):
+    """Return list of all orders with product of given id."""
+    query = """SELECT Orders.OrderID, Customers.CompanyName, "Order Details".Quantity, "Order Details".Discount, 
+                   "Order Details".UnitPrice FROM Orders
+               LEFT JOIN "Order Details" ON Orders.OrderID = "Order Details".OrderID
+               LEFT JOIN Customers ON Orders.CustomerID = Customers.CustomerID
+               WHERE ProductID = :id"""
+    records = app.db_connection.execute(query, {'id': product_id}).fetchall()
+    if not records:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Item not found')
+
+    orders = [{'id': record[0], 'customer': record[1], 'quantity': record[2],
+               'total_price': calculate_total_price(*record[2:])}
+              for record in records]
+    payload = {'orders': orders}
 
     return payload

@@ -103,3 +103,19 @@ def test_products_extended(client):
     assert test_product in payload['products_extended']
     assert sorted(payload['products_extended'], key=lambda item: item['id']) == payload['products_extended']
     assert len(payload['products_extended']) == expected_length
+
+
+def test_products_orders(client):
+    """Test '/products/{id}/orders endpoint."""
+    test_path = '/products/{}/orders'
+    test_order = {"id": 10273, "customer": "QUICK-Stop", "quantity": 24, "total_price": 565.44}
+
+    response_invalid = client.get(test_path.format(999))
+    response_valid = client.get(test_path.format(10))
+    payload = response_valid.json()
+
+    assert response_invalid.status_code == 404
+    assert response_valid.status_code == 200
+    assert type(payload) is dict
+    assert type(payload.get('orders')) is list
+    assert test_order in payload['orders']
