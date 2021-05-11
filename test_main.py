@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 import pytest
 
-from main import app, startup
+from main import app
 
 
 @pytest.fixture()
@@ -63,3 +63,25 @@ def test_customers(client):
     assert type(payload) is dict
     assert type(payload.get('customers')) is list
     assert test_customer in payload['customers']
+
+
+def test_employees(client):
+    """Test '/employees' endpoint."""
+    test_path = '/employees'
+    test_employee = {'id': 1, 'last_name': 'Davolio', 'first_name': 'Nancy', 'city': 'Seattle'}
+    orders = ['first_name', 'last_name', 'city']
+
+    response_invalid = client.get(test_path, params={'order': 'invalid'})
+    response_default_order = client.get(test_path)
+    responses_ordered = [client.get(test_path, params={'order': case}) for case in orders]
+
+    assert response_invalid.status_code == 400
+    assert response_default_order.status_code == 200
+    payload = response_default_order.json()
+    assert type(payload) is dict
+    assert type(payload.get('employees')) is list
+    assert test_employee in payload['employees']
+    assert sorted(payload['employees'], key=lambda item: item['id']) == payload['employees']
+    for response, order in zip(responses_ordered, orders):
+        payload = response.json()
+        assert sorted(payload['employees'], key=lambda item: item[order]) == payload['employees']
