@@ -85,3 +85,18 @@ def test_employees(client):
     for response, order in zip(responses_ordered, orders):
         payload = response.json()
         assert sorted(payload['employees'], key=lambda item: item[order]) == payload['employees']
+
+
+def test_products_extended(client):
+    """Test '/products_extended' endpoint."""
+    test_path = '/products_extended'
+    test_product = {"id": 1, "name": "Chai", "category": "Beverages", "supplier": "Exotic Liquids"}
+
+    response = client.get(test_path)
+    payload = response.json()
+
+    assert response.status_code == 200
+    assert type(payload) is dict
+    assert type(payload.get('products_extended')) is list
+    assert test_product in payload['products_extended']
+    assert sorted(payload['products_extended'], key=lambda item: item['id']) == payload['products_extended']
