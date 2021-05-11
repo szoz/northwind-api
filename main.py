@@ -3,7 +3,7 @@ from fastapi.responses import RedirectResponse
 from sqlite3 import connect
 from typing import Optional
 
-from schemas import EmployeesOrderEnum
+from schemas import EmployeesOrderEnum, Category
 
 DATABASE_URL = 'northwind.db'
 
@@ -144,5 +144,52 @@ async def get_products_orders(product_id: int = Path(-1, alias='id')):
                'total_price': calculate_total_price(*record[2:])}
               for record in records]
     payload = {'orders': orders}
+
+    return payload
+
+
+@app.post('/categories', status_code=status.HTTP_201_CREATED)
+async def create_category(category: Category):
+    """Create new product category"""
+    query = 'INSERT INTO Categories (CategoryName) VALUES (:name)'
+    query_read = 'SELECT CategoryID, CategoryName FROM Categories WHERE CategoryID = :id'
+    cursor = app.db_connection.cursor()
+    cursor.execute(query, {'name': category.name})
+    app.db_connection.commit()
+
+    record = cursor.execute(query_read, {'id': cursor.lastrowid}).fetchone()
+    payload = Category(id=record[0], name=record[1])
+
+    return payload
+
+
+@app.put('/categories/{id}')
+async def update_category(category: Category, category_id: int = Path(-1, alias='id')):
+    """Update category with given id."""
+    query = 'UPDATE Categories SET CategoryName = :name WHERE CategoryID = :id'
+    query_read = 'SELECT CategoryID, CategoryName FROM Categories WHERE CategoryID = :id'
+    cursor = app.db_connection.cursor()
+    if not cursor.execute(query_read, {'id': category_id}).fetchone():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Item not found')
+
+    cursor.execute(query, {'name': category.name, 'id': category_id})
+    app.db_connection.commit()
+
+    record = cursor.execute(query_read, {'id': category_id}).fetchone()
+    payload = Category(id=record[0], name=record[1])
+
+    return payload
+
+
+@app.delete('/categories/{id}')
+async def remove_category(category_id: int = Path(-1, alias='id')):
+    """Remove category with given id."""
+    query = 'DELETE FROM Categories WHERE CategoryID = :id'
+    query_read = 'SELECT CategoryID, CategoryName FROM Categories WHERE CategoryID = :id'
+    cursor = app.db_connection.cursor()
+    if not cursor.execute(query_read, {'id': category_id}).fetchone():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Item not found')
+
+    payload = {'deleted': cursor.execute(query, {'id': category_id}).rowcount}
 
     return payload
