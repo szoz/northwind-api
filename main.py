@@ -112,8 +112,8 @@ async def get_employees(order: Optional[str] = None, limit: int = -1, offset: in
 async def products_extended():
     """Return list of products with detailed information."""
     query = """SELECT ProductID, ProductName, Categories.CategoryName, Suppliers.CompanyName FROM Products
-               LEFT JOIN Categories ON Categories.CategoryID = Products.ProductID
-               LEFT JOIN Suppliers on Products.SupplierID = Suppliers.SupplierID;"""
+               LEFT JOIN Categories ON Products.CategoryID = Categories.CategoryID
+               LEFT JOIN Suppliers ON Products.SupplierID = Suppliers.SupplierID;"""
     records = app.db_connection.execute(query).fetchall()
     products = [{'id': record[0], 'name': record[1], 'category': record[2], 'supplier': record[3]}
                 for record in records]
