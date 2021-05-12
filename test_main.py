@@ -1,5 +1,6 @@
 from fastapi.testclient import TestClient
 import pytest
+from secrets import  token_hex
 
 from main import app
 
@@ -37,7 +38,7 @@ def test_products(client):
 
 
 def test_categories(client):
-    """Test '/categories' endpoint."""
+    """Test GET '/categories' endpoint."""
     test_path = '/categories'
     test_category = {"id": 1, "name": "Beverages"}
 
@@ -119,3 +120,50 @@ def test_products_orders(client):
     assert type(payload) is dict
     assert type(payload.get('orders')) is list
     assert test_order in payload['orders']
+
+
+def test_create_category(client):
+    """Test POST '/categories' endpoint."""
+    test_path = '/categories'
+    test_category = {'name': token_hex(8)}
+
+    response = client.post(test_path, json=test_category)
+    response_all = client.get(test_path)
+
+    assert response.status_code == 201
+    assert response.json() == response_all.json()['categories'][-1]
+    assert response.json().get('name') == test_category['name']
+
+
+def test_update_category(client):
+    """Test PUT '/categories' endpoint."""
+    test_path = '/categories/{}'
+    all_categories_path = '/categories'
+    test_category = {'name': token_hex(8)}
+
+    last_id = client.get(all_categories_path).json()['categories'][-1]['id']
+    response = client.put(test_path.format(last_id), json=test_category)
+    response_all = client.get(all_categories_path)
+    response_invalid = client.put(test_path.format(999), json=test_category)
+
+    assert response.status_code == 200
+    assert response_invalid.status_code == 404
+    assert response.json() == response_all.json()['categories'][-1]
+    assert response.json().get('name') == test_category['name']
+
+
+def test_remove_category(client):
+    """Test DELETE '/categories' endpoint."""
+    test_path = '/categories/{}'
+    all_categories_path = '/categories'
+
+    initial_categories = client.get(all_categories_path).json()['categories']
+    last_id = initial_categories[-1]['id']
+    response = client.delete(test_path.format(last_id))
+    response_all = client.get(all_categories_path)
+    response_invalid = client.delete(test_path.format(999))
+
+    assert response.status_code == 200
+    assert response_invalid.status_code == 404
+    assert initial_categories[-1] not in response_all.json()['categories']
+    assert response.json() == {'deleted': 1}
