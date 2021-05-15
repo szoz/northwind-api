@@ -1,6 +1,8 @@
 class CaseMixin:
     """Contains method used for exporting Models to PascalCase expected in API responses."""
+
     def export(self):
+        """Return dict with non-private object attributes converted to PascalCase."""
         exported_object = {}
         for attr, val in self.__dict__.items():
             if not attr.startswith('_'):
@@ -18,4 +20,5 @@ class CaseMixin:
         output_text = ''.join(word.capitalize() for word in text.split('_'))
         for old, new in special_texts.items():
             output_text = output_text.replace(old, new)
+
         return output_text

@@ -14,14 +14,16 @@ def client():
 def test_suppliers(client):
     """Test '/suppliers' endpoint."""
     test_path = '/suppliers'
+    test_records = [{"SupplierID": 1, "CompanyName": "Exotic Liquids"},
+                    {"SupplierID": 2, "CompanyName": "New Orleans Cajun Delights"}]
 
     response = client.get(test_path)
     payload = response.json()
 
     assert response.status_code == 200
     assert type(payload) is list
-    assert 'SupplierID' in payload[0].keys()
     assert sorted(payload, key=lambda item: item['SupplierID']) == payload
+    assert payload[:2] == test_records
 
 
 def test_supplier(client):
