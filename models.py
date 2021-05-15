@@ -1,9 +1,10 @@
 from sqlalchemy import Column, Integer, String
 
 from database import Base
+from utils import CaseMixin
 
 
-class Supplier(Base):
+class Supplier(Base, CaseMixin):
     __tablename__ = 'suppliers'
 
     supplier_id = Column(Integer, primary_key=True, nullable=False)

@@ -1,6 +1,6 @@
 from pydantic import BaseModel
-
 from typing import Optional
+from utils import CaseMixin
 
 
 class Supplier(BaseModel):
@@ -19,3 +19,4 @@ class Supplier(BaseModel):
 
     class Config:
         orm_mode = True
+        alias_generator = CaseMixin.to_pascal

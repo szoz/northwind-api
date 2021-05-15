@@ -28,13 +28,15 @@ def get_root():
 @app.get('/suppliers', response_model=List[schemas.Supplier], tags=['supplier'])
 def get_suppliers(db: Session = Depends(get_db)):
     """Return list of all suppliers"""
-    return crud.read_suppliers(db)
+    records = crud.read_suppliers(db)
+    return [record.export() for record in records]
 
 
 @app.get('/suppliers/{id}', response_model=schemas.Supplier, tags=['supplier'])
+# @app.get('/suppliers/{id}', tags=['supplier'])
 def get_supplier(supplier_id: int = Path(..., alias='id'), db: Session = Depends(get_db)):
     """Return supplier with given id."""
     db_user = crud.read_supplier(db, supplier_id=supplier_id)
     if db_user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Supplier not found')
-    return db_user
+    return db_user.export()

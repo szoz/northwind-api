@@ -20,14 +20,28 @@ def test_suppliers(client):
 
     assert response.status_code == 200
     assert type(payload) is list
-    assert 'supplier_id' in payload[0].keys()
-    assert sorted(payload, key=lambda item: item['supplier_id']) == payload
+    assert 'SupplierID' in payload[0].keys()
+    assert sorted(payload, key=lambda item: item['SupplierID']) == payload
 
 
 def test_supplier(client):
     """Test '/suppliers' endpoint with given id."""
     test_path = '/suppliers/{}'
-    test_id = 1
+    test_id = 5
+    test_record = {
+        'SupplierID': 5,
+        'CompanyName': 'Cooperativa de Quesos \'Las Cabras\'',
+        'ContactName': 'Antonio del Valle Saavedra',
+        'ContactTitle': 'Export Administrator',
+        'Address': 'Calle del Rosal 4',
+        'City': 'Oviedo',
+        'Region': 'Asturias',
+        'PostalCode': '33007',
+        'Country': 'Spain',
+        'Phone': '(98) 598 76 54',
+        'Fax': None,
+        'HomePage': None,
+    }
 
     response = client.get(test_path.format(test_id))
     payload = response.json()
@@ -36,4 +50,7 @@ def test_supplier(client):
     assert response.status_code == 200
     assert response_invalid.status_code == 404
     assert type(payload) is dict
-    assert payload['supplier_id'] == test_id
+    assert payload == test_record
+
+
+
