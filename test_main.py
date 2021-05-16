@@ -106,3 +106,21 @@ def test_create_supplier(client):
     assert response_short.status_code == 201
     assert response_short_verify.status_code == 200
     assert payload_short.items() <= response_short_verify.json().items()
+
+
+def test_update_supplier(client):
+    """Test PUT '/suppliers' endpoint with given supplier id."""
+    test_path = '/suppliers/{}'
+    create_path = '/suppliers'
+    new_record = {'CompanyName': 'Update Company Name'}
+    update_attributes = {'City': 'New City', 'Address': 'New address'}
+
+    response_create = client.post(create_path, json=new_record)
+    payload = response_create.json()
+    supplier_id = payload['SupplierID']
+    response_update = client.put(test_path.format(supplier_id), json=update_attributes)
+    payload_updated = response_update.json()
+
+    assert response_update.status_code == 200
+    payload.update(update_attributes)
+    assert payload_updated == payload

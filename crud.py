@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from sqlalchemy.sql.expression import func
+from sqlalchemy.sql.expression import func, update
 
 import models
 import schemas
@@ -23,6 +23,17 @@ def create_supplier(db: Session, supplier: schemas.Supplier):
     db.commit()
 
     return read_supplier(db, supplier_id=new_id)
+
+
+def update_supplier(db: Session, supplier_id: int, supplier_update: schemas.SupplierUpdate):
+    """Update supplier with given id using data in supplier_update object."""
+    update_attributes = {key: value for key, value in supplier_update.dict(exclude={'supplier_id'}).items()
+                         if value is not None}
+    db.execute(update(models.Supplier).where(models.Supplier.supplier_id == supplier_id).
+               values(**update_attributes))
+    db.commit()
+
+    return read_supplier(db, supplier_id=supplier_id)
 
 
 def read_supplier_products(db: Session, supplier_id: int):

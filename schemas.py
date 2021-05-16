@@ -31,6 +31,11 @@ class Supplier(SupplierBrief):
     homepage: Optional[str]
 
 
+class SupplierUpdate(Supplier):
+    """Supplier schema for updating record."""
+    company_name: Optional[str]
+
+
 class Category(ConfiguredBaseModel):
     """Category schema for products list view."""
     category_id: int

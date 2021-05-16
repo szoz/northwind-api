@@ -32,16 +32,16 @@ def get_suppliers(db: Session = Depends(get_db)):
     return [record.export() for record in records]
 
 
-@app.post('/suppliers', status_code=status.HTTP_201_CREATED, tags=['supplier'])
-def add_supplier(supplier: schemas.Supplier, db: Session = Depends(get_db)):
-    """Add new supplier from request body and return it back."""
+@app.post('/suppliers', response_model=schemas.Supplier, status_code=status.HTTP_201_CREATED, tags=['supplier'])
+def add_supplier(db: Session = Depends(get_db), supplier: schemas.Supplier = ...):
+    """Add new supplier from request body and return created object."""
     record = crud.create_supplier(db, supplier)
 
     return record.export()
 
 
 @app.get('/suppliers/{id}', response_model=schemas.Supplier, tags=['supplier'])
-def get_supplier(supplier_id: int = Path(..., alias='id'), db: Session = Depends(get_db)):
+def get_supplier(db: Session = Depends(get_db), supplier_id: int = Path(..., alias='id')):
     """Return supplier with given id."""
     record = crud.read_supplier(db, supplier_id=supplier_id)
     if not record:
@@ -50,8 +50,19 @@ def get_supplier(supplier_id: int = Path(..., alias='id'), db: Session = Depends
     return record.export()
 
 
+@app.put('/suppliers/{id}', response_model=schemas.SupplierUpdate, tags=['supplier'])
+def change_supplier(db: Session = Depends(get_db), supplier_id: int = Path(..., alias='id'),
+                    supplier: schemas.SupplierUpdate = ...):
+    """Update supplier with given id using data from request body and return updated object."""
+    record = crud.update_supplier(db, supplier_id, supplier)
+    if not record:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Supplier not found')
+
+    return record.export()
+
+
 @app.get('/suppliers/{id}/products', response_model=List[schemas.Product], tags=['supplier'])
-def get_supplier_products(supplier_id: int = Path(..., alias='id'), db: Session = Depends(get_db)):
+def get_supplier_products(db: Session = Depends(get_db), supplier_id: int = Path(..., alias='id')):
     """Return products with given supplier id."""
     records = crud.read_supplier_products(db, supplier_id=supplier_id)
     if not records:
