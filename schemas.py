@@ -13,8 +13,8 @@ class ConfiguredBaseModel(BaseModel):
 
 class SupplierBrief(ConfiguredBaseModel):
     """Supplier schema with less information for all suppliers view."""
-    supplier_id: int
-    company_name: Optional[str]
+    supplier_id: Optional[int]
+    company_name: str
 
 
 class Supplier(SupplierBrief):

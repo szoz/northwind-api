@@ -32,6 +32,14 @@ def get_suppliers(db: Session = Depends(get_db)):
     return [record.export() for record in records]
 
 
+@app.post('/suppliers', status_code=status.HTTP_201_CREATED, tags=['supplier'])
+def add_supplier(supplier: schemas.Supplier, db: Session = Depends(get_db)):
+    """Add new supplier from request body and return it back."""
+    record = crud.create_supplier(db, supplier)
+
+    return record.export()
+
+
 @app.get('/suppliers/{id}', response_model=schemas.Supplier, tags=['supplier'])
 def get_supplier(supplier_id: int = Path(..., alias='id'), db: Session = Depends(get_db)):
     """Return supplier with given id."""

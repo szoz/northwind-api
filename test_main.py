@@ -14,8 +14,8 @@ def client():
 def test_suppliers(client):
     """Test '/suppliers' endpoint."""
     test_path = '/suppliers'
-    test_records = [{"SupplierID": 1, "CompanyName": "Exotic Liquids"},
-                    {"SupplierID": 2, "CompanyName": "New Orleans Cajun Delights"}]
+    test_records = [{'SupplierID': 1, 'CompanyName': 'Exotic Liquids'},
+                    {'SupplierID': 2, 'CompanyName': 'New Orleans Cajun Delights'}]
 
     response = client.get(test_path)
     payload = response.json()
@@ -59,10 +59,10 @@ def test_supplier_products(client):
     """Test '/suppliers/{}/products' endpoint with given supplier id."""
     test_path = '/suppliers/{}/products'
     test_id = 12
-    test_records = [{"ProductID": 29, "ProductName": "Thüringer Rostbratwurst",
-                    "Category": {"CategoryID": 6, "CategoryName": "Meat/Poultry"}, "Discontinued": 1},
-                   {"ProductID": 28, "ProductName": "Rössle Sauerkraut",
-                    "Category": {"CategoryID": 7, "CategoryName": "Produce"}, "Discontinued": 1}]
+    test_records = [{'ProductID': 29, 'ProductName': 'Thüringer Rostbratwurst',
+                    'Category': {'CategoryID': 6, 'CategoryName': 'Meat/Poultry'}, 'Discontinued': 1},
+                    {'ProductID': 28, 'ProductName': 'Rössle Sauerkraut',
+                    'Category': {'CategoryID': 7, 'CategoryName': 'Produce'}, 'Discontinued': 1}]
 
     response = client.get(test_path.format(test_id))
     payload = response.json()
@@ -72,3 +72,37 @@ def test_supplier_products(client):
     assert response_invalid.status_code == 404
     assert type(payload) is list
     assert payload[-2:] == test_records
+
+
+def test_create_supplier(client):
+    """Test POST '/suppliers' endpoint."""
+    test_path = '/suppliers'
+    verify_path = '/suppliers/{}'
+    new_record = {
+        'CompanyName': 'Test Company Name',
+        'ContactName': 'Test Contact Name',
+        'ContactTitle': 'Unknown',
+        'Address': 'Test Address',
+        'City': 'Test City',
+        'PostalCode': '123-123',
+        'Country': 'Unknown',
+        'Phone': '123-123-123',
+    }
+    new_short_record = {'CompanyName': 'Short Company Name'}
+    invalid_record = {'City': 'Test City'}
+
+    response_invalid = client.post(test_path, json=invalid_record)
+    response = client.post(test_path, json=new_record)
+    payload = response.json()
+    response_verify = client.get(verify_path.format(payload['SupplierID']))
+    response_short = client.post(test_path, json=new_short_record)
+    payload_short = response_short.json()
+    response_short_verify = client.get(verify_path.format(payload_short['SupplierID']))
+
+    assert response_invalid.status_code == 422
+    assert response.status_code == 201
+    assert response_verify.status_code == 200
+    assert payload.items() <= response_verify.json().items()
+    assert response_short.status_code == 201
+    assert response_short_verify.status_code == 200
+    assert payload_short.items() <= response_short_verify.json().items()

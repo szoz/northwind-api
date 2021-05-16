@@ -3,6 +3,7 @@ from database import Base
 
 class CaseMixin:
     """Contains method used for exporting Models to PascalCase expected in API responses."""
+    __abstract__ = True
 
     def export(self):
         """Return dict with non-private object attributes converted to PascalCase. If object are nested returned dict
