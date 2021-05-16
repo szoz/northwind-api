@@ -29,14 +29,15 @@ def update_supplier(db: Session, supplier_id: int, supplier_update: schemas.Supp
     """Update supplier with given id using data in supplier_update object."""
     update_attributes = {key: value for key, value in supplier_update.dict(exclude={'supplier_id'}).items()
                          if value is not None}
-    db.execute(update(models.Supplier).where(models.Supplier.supplier_id == supplier_id).
-               values(**update_attributes))
-    db.commit()
+    if update_attributes != {}:
+        db.execute(update(models.Supplier).where(models.Supplier.supplier_id == supplier_id).
+                   values(**update_attributes))
+        db.commit()
 
     return read_supplier(db, supplier_id=supplier_id)
 
 
 def read_supplier_products(db: Session, supplier_id: int):
     """Return list of all products of supplier with given id"""
-    return db.query(models.Product).filter(models.Product.supplier_id == supplier_id).\
+    return db.query(models.Product).filter(models.Product.supplier_id == supplier_id). \
         order_by(models.Product.product_id.desc()).all()
