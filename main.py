@@ -66,7 +66,7 @@ def remove_supplier(db: Session = Depends(get_db), supplier_id: int = Path(..., 
     """Remove supplier with given id."""
     supplier_removed = crud.delete_supplier(db, supplier_id=supplier_id)
     if not supplier_removed:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Supplier not found')
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Supplier not found')
 
 
 @app.get('/suppliers/{id}/products', response_model=List[schemas.Product], tags=['supplier'])
