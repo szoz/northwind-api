@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from sqlalchemy.sql.expression import func, update
+from sqlalchemy.sql.expression import func, update, delete
 
 import models
 import schemas
@@ -35,6 +35,13 @@ def update_supplier(db: Session, supplier_id: int, supplier_update: schemas.Supp
         db.commit()
 
     return read_supplier(db, supplier_id=supplier_id)
+
+
+def delete_supplier(db: Session, supplier_id: int):
+    """Deletes supplier with given id and returns deleting flag."""
+    deleted = db.query(models.Supplier).filter_by(supplier_id=supplier_id).delete()
+    db.commit()
+    return deleted > 0
 
 
 def read_supplier_products(db: Session, supplier_id: int):

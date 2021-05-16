@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Path, Depends, HTTPException, status
+from fastapi import FastAPI, Path, Depends, HTTPException, status, Response
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from typing import List
@@ -59,6 +59,14 @@ def change_supplier(db: Session = Depends(get_db), supplier_id: int = Path(..., 
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Supplier not found')
 
     return record.export()
+
+
+@app.delete('/suppliers/{id}', status_code=status.HTTP_204_NO_CONTENT, response_class=Response, tags=['supplier'])
+def remove_supplier(db: Session = Depends(get_db), supplier_id: int = Path(..., alias='id')):
+    """Remove supplier with given id."""
+    supplier_removed = crud.delete_supplier(db, supplier_id=supplier_id)
+    if not supplier_removed:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Supplier not found')
 
 
 @app.get('/suppliers/{id}/products', response_model=List[schemas.Product], tags=['supplier'])

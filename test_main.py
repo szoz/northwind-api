@@ -124,3 +124,21 @@ def test_update_supplier(client):
     assert response_update.status_code == 200
     payload.update(update_attributes)
     assert payload_updated == payload
+
+
+def test_delete_supplier(client):
+    """Test DELETE '/suppliers' endpoint with given supplier id."""
+    test_path = '/suppliers/{}'
+    create_path = '/suppliers'
+    new_record = {'CompanyName': 'Delete Company Name'}
+
+    response_create = client.post(create_path, json=new_record)
+    payload = response_create.json()
+    supplier_id = payload['SupplierID']
+    response_delete = client.delete(test_path.format(supplier_id))
+    response_duplicate = client.delete(test_path.format(supplier_id))
+    response_verify = client.get(test_path.format(supplier_id))
+
+    assert response_delete.status_code == 204
+    assert response_duplicate.status_code == 401
+    assert response_verify.status_code == 404
