@@ -27,7 +27,7 @@ def test_suppliers(client):
 
 
 def test_supplier(client):
-    """Test '/suppliers' endpoint with given id."""
+    """Test '/suppliers' endpoint with given supplier id."""
     test_path = '/suppliers/{}'
     test_id = 5
     test_record = {
@@ -55,4 +55,20 @@ def test_supplier(client):
     assert payload == test_record
 
 
+def test_supplier_products(client):
+    """Test '/suppliers/{}/products' endpoint with given supplier id."""
+    test_path = '/suppliers/{}/products'
+    test_id = 12
+    test_records = [{"ProductID": 29, "ProductName": "Thüringer Rostbratwurst",
+                    "Category": {"CategoryID": 6, "CategoryName": "Meat/Poultry"}, "Discontinued": 1},
+                   {"ProductID": 28, "ProductName": "Rössle Sauerkraut",
+                    "Category": {"CategoryID": 7, "CategoryName": "Produce"}, "Discontinued": 1}]
 
+    response = client.get(test_path.format(test_id))
+    payload = response.json()
+    response_invalid = client.get(test_path.format(999))
+
+    assert response.status_code == 200
+    assert response_invalid.status_code == 404
+    assert type(payload) is list
+    assert payload[-2:] == test_records

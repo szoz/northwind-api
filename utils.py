@@ -1,11 +1,17 @@
+from database import Base
+
+
 class CaseMixin:
     """Contains method used for exporting Models to PascalCase expected in API responses."""
 
     def export(self):
-        """Return dict with non-private object attributes converted to PascalCase."""
+        """Return dict with non-private object attributes converted to PascalCase. If object are nested returned dict
+        is also nested."""
         exported_object = {}
         for attr, val in self.__dict__.items():
-            if not attr.startswith('_'):
+            if isinstance(val, Base):
+                exported_object[self.to_pascal(attr)] = val.export()
+            elif not attr.startswith('_'):
                 exported_object[self.to_pascal(attr)] = val
         return exported_object
 

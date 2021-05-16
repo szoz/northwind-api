@@ -35,7 +35,18 @@ def get_suppliers(db: Session = Depends(get_db)):
 @app.get('/suppliers/{id}', response_model=schemas.Supplier, tags=['supplier'])
 def get_supplier(supplier_id: int = Path(..., alias='id'), db: Session = Depends(get_db)):
     """Return supplier with given id."""
-    db_user = crud.read_supplier(db, supplier_id=supplier_id)
-    if db_user is None:
+    record = crud.read_supplier(db, supplier_id=supplier_id)
+    if not record:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Supplier not found')
-    return db_user.export()
+
+    return record.export()
+
+
+@app.get('/suppliers/{id}/products', response_model=List[schemas.Product], tags=['supplier'])
+def get_supplier_products(supplier_id: int = Path(..., alias='id'), db: Session = Depends(get_db)):
+    """Return products with given supplier id."""
+    records = crud.read_supplier_products(db, supplier_id=supplier_id)
+    if not records:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Supplier not found')
+
+    return [record.export() for record in records]

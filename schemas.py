@@ -3,14 +3,18 @@ from typing import Optional
 from utils import CaseMixin
 
 
-class SupplierBrief(BaseModel):
-    """Supplier schema with less information for all suppliers view."""
-    supplier_id: int
-    company_name: Optional[str]
+class ConfiguredBaseModel(BaseModel):
+    """Generic schema with configuration for all schemas."""
 
     class Config:
         orm_mode = True
         alias_generator = CaseMixin.to_pascal
+
+
+class SupplierBrief(ConfiguredBaseModel):
+    """Supplier schema with less information for all suppliers view."""
+    supplier_id: int
+    company_name: Optional[str]
 
 
 class Supplier(SupplierBrief):
@@ -25,3 +29,17 @@ class Supplier(SupplierBrief):
     phone: Optional[str]
     fax: Optional[str]
     homepage: Optional[str]
+
+
+class Category(ConfiguredBaseModel):
+    """Category schema for products list view."""
+    category_id: int
+    category_name: str
+
+
+class Product(ConfiguredBaseModel):
+    """Product schema for list view."""
+    product_id: int
+    product_name: str
+    category: Optional[Category]
+    discontinued: int
